@@ -1,0 +1,46 @@
+project:
+  title: "Master's Thesis Timeline"
+  start_date: "2026-01-15"
+  end_date: "2026-07-15"
+  today_date: ""
+
+output:
+  filename: "gantt_chart.png"
+  dpi: 300
+
+tasks:
+  - name: "InEKF PCV odometry in simulation"
+    duration_weeks: 6
+    start_date: "2026-01-15"
+
+  - name: "PCV odometry without slip elimination vs Ground Truth"
+    duration_weeks: 1
+    start_date: "2026-02-20"
+
+  - name: "InEKF PCV odometry with slip elimination"
+    duration_weeks: 3
+    start_date: "2026-02-28"
+
+  - name: "Contact estimation using InEKF"
+    duration_weeks: 2
+    start_date: "2026-03-22"
+
+  - name: "Rover implementation and testing"
+    duration_weeks: 4
+    start_date: "2026-04-06"
+
+  - name: "Rover experiments in crater hall"
+    duration_weeks: 4
+    start_date: "2026-04-16"
+
+  - name: "Experimental data evaluation"
+    duration_weeks: 4
+    start_date: "2026-05-14"
+
+  - name: "Final Review & Submission"
+    duration_weeks: 4
+    start_date: "2026-06-12"
+
+  - name: "Thesis Writing (All Chapters)"
+    duration_weeks: "start2end"
+    start_date: "2026-01-15"
