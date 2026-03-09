@@ -270,8 +270,19 @@ def create_gantt_chart(df, project_start, project_end, config):
     
     # Today's date marker
     # PRINT TODAY LINE ONLY IF THE TODAY DATE IS PROVIDED IN THE CONFIG
-    if config["project"]["today_date"] != "":
+    if config["project"]["today_date"] != "" and config["project"]["today_date"] != "today":
         today = parse_date(config["project"]["today_date"])
+        
+        if plot_start_lim <= today <= plot_end_lim:
+            ax.axvline(today, color=STYLE["today_color"], linestyle='-', 
+                    linewidth=2, alpha=0.7, zorder=5)
+            today_label = today.strftime("%d-%b'%y")
+            ax.text(today, -0.06, f"Today: {today_label}", 
+                    color=STYLE["today_color"], ha='center', va='top', 
+                    transform=ax.get_xaxis_transform(), fontsize=9, fontweight='bold')
+            
+    if config["project"]["today_date"] == "today":
+        today = datetime.now()
         
         if plot_start_lim <= today <= plot_end_lim:
             ax.axvline(today, color=STYLE["today_color"], linestyle='-', 

@@ -2,7 +2,7 @@ project:
   title: "Master's Thesis Timeline"
   start_date: "2026-01-15"
   end_date: "2026-07-15"
-  today_date: ""
+  today_date: "today"
 
 output:
   filename: "gantt_chart.png"
