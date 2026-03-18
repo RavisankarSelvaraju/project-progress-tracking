@@ -1,5 +1,6 @@
 project:
   title: "Master's Thesis Timeline"
+  show_title: true
   start_date: "2026-01-15"
   end_date: "2026-07-15"
   today_date: "today"
@@ -44,3 +45,19 @@ tasks:
   - name: "Thesis Writing (All Chapters)"
     duration_weeks: "start2end"
     start_date: "2026-01-15"
+
+milestones:
+  show_milestones: true
+  items:
+    - name: "M1"
+      date: "2026-01-31"
+    - name: "M2"
+      date: "2026-02-28"
+    - name: "M3"
+      date: "2026-03-22"
+    - name: "M4"
+      date: "2026-04-16"
+    - name: "M5"
+      date: "2026-05-14"
+    - name: "M6"
+      date: "2026-07-15"

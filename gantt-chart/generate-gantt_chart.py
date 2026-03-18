@@ -213,6 +213,9 @@ def create_gantt_chart(df, project_start, project_end, config):
     ax.set_yticklabels(df["Task"], fontsize=11, color=STYLE["text_color"], fontweight='500')
     ax.invert_yaxis() 
     
+    # Standard padding
+    ax.set_ylim(bottom=len(df)-0.5, top=-0.5)
+    
     # X-Axis
     ax.xaxis.set_major_locator(mdates.MonthLocator())
     ax.xaxis.set_major_formatter(plt.NullFormatter()) 
@@ -301,10 +304,41 @@ def create_gantt_chart(df, project_start, project_end, config):
             transform=ax.get_xaxis_transform(), fontsize=10, fontweight='bold')
     
     # ----------------------------
+    # Milestones
+    # ----------------------------
+    milestones_cfg = config.get("milestones", {})
+    if milestones_cfg.get("show_milestones", True):
+        milestone_color = "#800000" # Maroon
+        milestones = milestones_cfg.get("items", [])
+        
+        for ms in milestones:
+            ms_date = parse_date(ms["date"])
+            ms_name = ms["name"]
+            
+            if plot_start_lim <= ms_date <= plot_end_lim:
+                # Vertical line
+                ax.axvline(ms_date, color=milestone_color, linestyle='--', 
+                           linewidth=1, alpha=0.4, zorder=1)
+                
+                # Diamond marker slightly above the top spine
+                # Using axis transform for Y to stick to the top (y=1.01)
+                ax.plot(ms_date, 1.01, marker='d', markersize=8, 
+                        color=milestone_color, alpha=1.0, zorder=11,
+                        transform=ax.get_xaxis_transform(), clip_on=False)
+                
+                # Label above the diamond
+                ax.text(ms_date, 1.03, ms_name, 
+                        color=milestone_color, ha='left', va='bottom', 
+                        transform=ax.get_xaxis_transform(),
+                        fontsize=9, fontweight='bold', zorder=10, rotation=35)
+
+    # ----------------------------
     # Title & Save
     # ----------------------------
-    ax.set_title(config["project"]["title"], fontsize=18, pad=25, 
-                 color=STYLE["text_color"], fontweight='bold', loc='center')
+    if config["project"].get("show_title", True):
+        ax.set_title(config["project"]["title"], fontsize=18, pad=40, 
+                    color=STYLE["text_color"], fontweight='bold', loc='center')
+    
     plt.tight_layout()
     
     output_path = config["output"]["filename"]
