@@ -1,12 +1,15 @@
 project:
   title: "Master's Thesis Timeline"
+  bar_height: 0.7 # can be from 0.4 to 0.8 for better aesthetics, Adjust based on number of tasks 
   show_title: true
+  show_elapsed_overlay: true
+  show_remaining_overlay: true
   start_date: "2026-01-15"
   end_date: "2026-07-15"
-  today_date: "today"
+  today_date: "today" # can be either "today" or eg: "2025-03-01"
 
 output:
-  filename: "gantt_chart.png"
+  filename: "progress-tracking/gantt-chart/gantt_chart.png"
   dpi: 300
 
 tasks:
@@ -47,7 +50,7 @@ tasks:
     start_date: "2026-01-15"
 
 milestones:
-  show_milestones: true
+  show_milestones: false
   items:
     - name: "M1"
       date: "2026-01-31"

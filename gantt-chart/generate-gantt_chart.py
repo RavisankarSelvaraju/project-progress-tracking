@@ -52,8 +52,7 @@ from datetime import datetime, timedelta
 # ----------------------------
 # Defaults & Constants
 # ----------------------------
-CONFIG_FILE = "./gantt_config.yaml"
-DEFAULT_BAR_HEIGHT = 0.8
+CONFIG_FILE = "progress-tracking/gantt-chart/gantt_config.yaml"
 FIG_SIZE = (15, 6)
 
 # Colors
@@ -66,7 +65,9 @@ STYLE = {
     "today_color": "#9B59B6",     # Purple (Today)
     "grid_color": "#BDC3C7",
     "bg_color_alt": "#F7F9F9",    # Alternating month shade
-    "border_color": "#2C3E50"
+    "border_color": "#2C3E50",
+    "elapsed_overlay_color": "#E74C3C",   # Red overlay for elapsed time
+    "remaining_overlay_color": "#27AE60"  # Green overlay for remaining time
 }
 
 def load_config(config_path):
@@ -163,7 +164,7 @@ def create_gantt_chart(df, project_start, project_end, config):
         y_pos,
         df["DurationDays"],
         left=df["Start"],
-        height=DEFAULT_BAR_HEIGHT,
+        height=config.get("project", {}).get("bar_height", 0.5),
         align='center',
         color=STYLE["bar_color"],
         alpha=0.9,
@@ -180,6 +181,14 @@ def create_gantt_chart(df, project_start, project_end, config):
     
     ax.set_xlim(left=plot_start_lim, right=plot_end_lim)
     
+    # Resolve today date once from config
+    today = None
+    today_cfg = str(config.get("project", {}).get("today_date", "")).strip().lower()
+    if today_cfg == "today":
+        today = datetime.now()
+    elif today_cfg:
+        today = parse_date(config["project"]["today_date"])
+
     for i, bar in enumerate(bars):
         start = df.loc[i, "Start"]
         end = df.loc[i, "End"]
@@ -243,6 +252,34 @@ def create_gantt_chart(df, project_start, project_end, config):
             # Long: "January '26"
             labels.append(m_start.strftime("%B '%y"))
         
+    elapsed_overlay = config.get("project", {}).get("show_elapsed_overlay", True)
+    # Elapsed-time overlay (red translucent): project start -> today
+    if today is not None and elapsed_overlay is True:
+        elapsed_start = max(project_start, plot_start_lim)
+        elapsed_end = min(today, project_end, plot_end_lim)
+        if elapsed_start < elapsed_end:
+            ax.axvspan(
+                elapsed_start,
+                elapsed_end,
+                facecolor=STYLE["elapsed_overlay_color"],
+                alpha=0.22,   # increase visibility
+                zorder=2.6    # above background, below bars/text
+            )
+
+    remaining_overlay = config.get("project", {}).get("show_remaining_overlay", True)
+    # Remaining-time overlay (green translucent): today -> project end
+    if today is not None and remaining_overlay is True:
+        remaining_start = max(today, project_start, plot_start_lim)
+        remaining_end = min(project_end, plot_end_lim)
+        if remaining_start < remaining_end:
+            ax.axvspan(
+                remaining_start,
+                remaining_end,
+                facecolor=STYLE["remaining_overlay_color"],
+                alpha=0.14,
+                zorder=2.5
+            )
+
     ax.set_xticks(midpoints, minor=True)
     ax.set_xticklabels(labels, minor=True, fontsize=11, 
                        color=STYLE["text_color"], fontweight='bold')
@@ -272,29 +309,14 @@ def create_gantt_chart(df, project_start, project_end, config):
                linewidth=1.5, alpha=0.8, zorder=5)
     
     # Today's date marker
-    # PRINT TODAY LINE ONLY IF THE TODAY DATE IS PROVIDED IN THE CONFIG
-    if config["project"]["today_date"] != "" and config["project"]["today_date"] != "today":
-        today = parse_date(config["project"]["today_date"])
-        
-        if plot_start_lim <= today <= plot_end_lim:
-            ax.axvline(today, color=STYLE["today_color"], linestyle='-', 
-                    linewidth=2, alpha=0.7, zorder=5)
-            today_label = today.strftime("%d-%b'%y")
-            ax.text(today, -0.06, f"Today: {today_label}", 
-                    color=STYLE["today_color"], ha='center', va='top', 
-                    transform=ax.get_xaxis_transform(), fontsize=9, fontweight='bold')
-            
-    if config["project"]["today_date"] == "today":
-        today = datetime.now()
-        
-        if plot_start_lim <= today <= plot_end_lim:
-            ax.axvline(today, color=STYLE["today_color"], linestyle='-', 
-                    linewidth=2, alpha=0.7, zorder=5)
-            today_label = today.strftime("%d-%b'%y")
-            ax.text(today, -0.06, f"Today: {today_label}", 
-                    color=STYLE["today_color"], ha='center', va='top', 
-                    transform=ax.get_xaxis_transform(), fontsize=9, fontweight='bold')
-                
+    if today is not None and plot_start_lim <= today <= plot_end_lim:
+        ax.axvline(today, color=STYLE["today_color"], linestyle='-',
+                   linewidth=2, alpha=0.7, zorder=5)
+        today_label = today.strftime("%d-%b'%y")
+        ax.text(today, -0.06, f"Today: {today_label}",
+                color=STYLE["today_color"], ha='center', va='top',
+                transform=ax.get_xaxis_transform(), fontsize=9, fontweight='bold')
+
     # Bottom Date Labels (below X axis)
     ax.text(project_start, -0.06, project_start.strftime("%d-%b'%y"), 
             color=STYLE["success_color"], ha='center', va='top', 
